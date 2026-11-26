@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>School Calling Booth - Admin Panel</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { margin: 0; background: #f1f5f9; color: #0f172a; }
+    header { background: #0f172a; color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 18px; }
+    .wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+    .card { background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tab { padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 700; }
+    .tab.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    input, select { padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+    button { padding: 9px 15px; border: 0; border-radius: 6px; background: #1d4ed8; color: #fff; font-weight: 700; cursor: pointer; }
+    button.green { background: #16a34a; }
+    button.red { background: #dc2626; }
+    button.gray { background: #475569; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+    th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; }
+    .hidden { display: none; }
+    .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .ok { background: #dcfce7; color: #166534; }
+    .off { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="schoolTitle">School Calling Booth System</h1>
+    <div id="userBar" class="hidden row">
+      <span id="userInfo" style="font-size:13px;"></span>
+      <button class="red" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div id="loginBox" class="card" style="max-width:400px;margin:60px auto;">
+      <h2 style="margin-top:0;">Admin Login</h2>
+      <div style="display:grid;gap:10px;">
+        <input id="loginId" placeholder="Login ID (e.g. ADMIN001)" />
+        <input id="loginPass" type="password" placeholder="Password" />
+        <button onclick="login()">Sign In</button>
+        <div id="loginErr" style="color:#dc2626;font-size:13px;"></div>
+      </div>
+    </div>
+
+    <div id="appBox" class="hidden">
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('logs', this)">Call Logs & Recordings</button>
+        <button class="tab" onclick="showTab('students', this)">Students & Contacts</button>
+        <button class="tab" onclick="showTab('schedules', this)">Calling Schedules & Settings</button>
+      </div>
+
+      <div id="tab-logs" class="card">
+        <div class="row" style="justify-content:space-between;">
+          <h3 style="margin:0;">Call Logs</h3>
+          <div class="row">
+            <input id="logSearch" placeholder="Search Reg No / Name" />
+            <input id="logDate" type="date" />
+            <button onclick="loadLogs()">Search</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Time</th><th>Reg No</th><th>Student</th><th>Relation</th><th>Duration</th><th>Status</th><th>Recording</th></tr></thead>
+          <tbody id="logsBody"></tbody>
+        </table>
+      </div>
+
+      <div id="tab-students" class="card hidden">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px;">
+          <h3 style="margin:0;">Students & Guardian Numbers</h3>
+          <div class="row">
+            <input id="excelFile" type="file" accept=".xlsx" />
+            <button class="green" onclick="importExcel()">Import Excel (.xlsx)</button>
+          </div>
+        </div>
+        <div class="row" style="background:#f8fafc;padding:10px;border-radius:8px;margin-bottom:10px;">
+          <input id="sReg" placeholder="Reg No *" style="width:110px;" />
+          <input id="sName" placeholder="Student Name *" />
+          <input id="sClass" placeholder="Class *" style="width:90px;" />
+          <input id="sFather" placeholder="Father Mobile" style="width:130px;" />
+          <input id="sMother" placeholder="Mother Mobile" style="width:130px;" />
+          <input id="sG1" placeholder="Guardian 1 Mobile" style="width:140px;" />
+          <input id="sG1Rel" placeholder="Relation" style="width:100px;" />
+          <button onclick="saveStudent()">Add / Update</button>
+        </div>
+        <div class="row">
+          <input id="stuSearch" placeholder="Search Reg No / Name" />
+          <button class="gray" onclick="loadStudents()">Filter</button>
+        </div>
+        <table>
+          <thead><tr><th>Reg No</th><th>Name</th><th>Class</th><th>Father</th><th>Mother</th><th>Guardian 1</th><th>Status</th></tr></thead>
+          <tbody id="stuBody"></tbody>
+        </table>
+      </div>
+
+      <div id="tab-schedules" class="card hidden">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px;">
+          <h3 style="margin:0;">Calling Schedules & Recording</h3>
+          <button id="recToggleBtn" onclick="toggleRecording()">Loading Recording Status...</button>
+        </div>
+        <div class="row" style="background:#f8fafc;padding:10px;border-radius:8px;margin-bottom:10px;">
+          <input id="schClass" placeholder="Class (e.g. X or ALL)" />
+          <input id="schMin" type="number" value="8" placeholder="Minutes" style="width:90px;" />
+          <input id="schStart" value="06:00" style="width:90px;" />
+          <input id="schEnd" value="22:00" style="width:90px;" />
+          <button onclick="addSchedule()">Add Schedule</button>
+        </div>
+        <table>
+          <thead><tr><th>Class</th><th>Minutes/Week</th><th>Time</th><th>Days</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="schBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+const tokenKey = 'school_calling_token';
+function getToken() { return localStorage.getItem(tokenKey) || ''; }
+async function api(url, opts = {}) {
+  const headers = opts.headers || {};
+  if (getToken()) headers['Authorization'] = 'Bearer ' + getToken();
+  if (!(opts.body instanceof FormData) && opts.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+  const r = await fetch(url, { ...opts, headers });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.message || 'Request failed');
+  return d;
+}
+
+async function login() {
+  try {
+    const d = await api('/api/login', { method: 'POST', body: JSON.stringify({ login_id: loginId.value, password: loginPass.value }) });
+    localStorage.setItem(tokenKey, d.token);
+    initApp(d);
+  } catch (e) { loginErr.textContent = e.message; }
+}
+function logout() { localStorage.removeItem(tokenKey); location.reload(); }
+function showTab(name, btn) {
+  ['logs','students','schedules'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (name === 'logs') loadLogs();
+  if (name === 'students') loadStudents();
+  if (name === 'schedules') loadSchedules();
+}
+
+async function initApp(d) {
+  schoolTitle.textContent = d.school_name || 'School Calling Booth';
+  userInfo.textContent = d.user.full_name + ' (' + d.user.role + ')';
+  loginBox.classList.add('hidden');
+  appBox.classList.remove('hidden');
+  userBar.classList.remove('hidden');
+  loadLogs();
+}
+
+async function loadLogs() {
+  const p = new URLSearchParams();
+  if (logSearch.value) p.set('q', logSearch.value);
+  if (logDate.value) { p.set('from', logDate.value); p.set('to', logDate.value); }
+  const d = await api('/api/calls/logs?' + p.toString());
+  logsBody.innerHTML = (d.logs || []).map(l => `<tr>
+    <td>${new Date(l.created_at).toLocaleString()}</td>
+    <td>${l.reg_no || '-'}</td>
+    <td>${l.student_name || '-'}</td>
+    <td>${l.called_relation || '-'}</td>
+    <td>${l.call_duration_seconds || 0}s</td>
+    <td>${l.status}</td>
+    <td>${l.recording_url ? `<audio controls preload="none" src="${l.recording_url.startsWith('http') ? l.recording_url : l.recording_url + '?token=' + encodeURIComponent(getToken())}" style="height:30px;"></audio>` : '-'}</td>
+  </tr>`).join('');
+}
+
+async function loadStudents() {
+  const d = await api('/api/students?q=' + encodeURIComponent(stuSearch.value || ''));
+  stuBody.innerHTML = (d.students || []).map(s => `<tr>
+    <td>${s.registration_no}</td><td>${s.student_name}</td><td>${s.class_name}</td>
+    <td>${s.c_father_mobile || s.father_mobile || '-'}</td>
+    <td>${s.c_mother_mobile || s.mother_mobile || '-'}</td>
+    <td>${s.guardian_1_mobile ? s.guardian_1_mobile + ' (' + (s.guardian_1_relation||'') + ')' : '-'}</td>
+    <td><button class="badge ${s.is_active ? 'ok' : 'off'}" onclick="toggleStu(${s.id})">${s.is_active ? 'Active' : 'Inactive'}</button></td>
+  </tr>`).join('');
+}
+async function saveStudent() {
+  await api('/api/students', { method: 'POST', body: JSON.stringify({
+    registration_no: sReg.value, student_name: sName.value, class_name: sClass.value,
+    father_mobile: sFather.value, mother_mobile: sMother.value, guardian_1_mobile: sG1.value, guardian_1_relation: sG1Rel.value
+  })});
+  sReg.value = sName.value = sFather.value = sMother.value = sG1.value = sG1Rel.value = '';
+  loadStudents();
+}
+async function toggleStu(id) { await api('/api/students/' + id + '/toggle-active', { method: 'PATCH' }); loadStudents(); }
+async function importExcel() {
+  if (!excelFile.files[0]) return alert('Select an .xlsx file first');
+  const fd = new FormData(); fd.append('file', excelFile.files[0]);
+  const r = await api('/api/students/import-excel', { method: 'POST', body: fd });
+  alert('Imported ' + r.imported + ' students!');
+  loadStudents();
+}
+
+async function loadSchedules() {
+  const [sRes, rRes] = await Promise.all([api('/api/calling-schedules'), api('/api/calling-schedules/recording-status')]);
+  recToggleBtn.textContent = 'Call Recording: ' + (rRes.enabled ? 'ON' : 'OFF');
+  recToggleBtn.className = rRes.enabled ? 'green' : 'red';
+  schBody.innerHTML = (sRes.schedules || []).map(x => `<tr>
+    <td>${x.class_name}</td><td>${x.allowed_talk_time}m</td><td>${x.start_time} - ${x.end_time}</td>
+    <td>${(x.days || []).join(', ')}</td>
+    <td><span class="badge ${x.is_active ? 'ok' : 'off'}">${x.is_active ? 'Active' : 'Off'}</span></td>
+    <td><button class="gray" onclick="toggleSch(${x.id})">Toggle</button></td>
+  </tr>`).join('');
+}
+async function addSchedule() {
+  await api('/api/calling-schedules', { method: 'POST', body: JSON.stringify({
+    class_name: schClass.value || 'ALL', allowed_talk_time: Number(schMin.value || 8),
+    start_time: schStart.value || '06:00', end_time: schEnd.value || '22:00',
+    days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+  })});
+  loadSchedules();
+}
+async function toggleSch(id) { await api('/api/calling-schedules/' + id + '/toggle', { method: 'PATCH' }); loadSchedules(); }
+async function toggleRecording() {
+  const cur = recToggleBtn.textContent.includes('ON');
+  await api('/api/calling-schedules/recording-toggle', { method: 'POST', body: JSON.stringify({ enabled: !cur }) });
+  loadSchedules();
+}
+
+if (getToken()) { api('/api/me').then(initApp).catch(() => localStorage.removeItem(tokenKey)); }
+</script>
+</body>
+</html>
