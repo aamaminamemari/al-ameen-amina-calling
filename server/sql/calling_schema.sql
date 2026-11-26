@@ -73,8 +73,15 @@ CREATE TABLE IF NOT EXISTS student_calling_access (
   student_id BIGINT UNIQUE NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   is_emergency_call BOOLEAN NOT NULL DEFAULT FALSE,
   emergency_until TIMESTAMPTZ,
+  is_scheduled BOOLEAN NOT NULL DEFAULT TRUE,
+  ipbx_id VARCHAR(64),
+  dial_no VARCHAR(64),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE student_calling_access ADD COLUMN IF NOT EXISTS is_scheduled BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE student_calling_access ADD COLUMN IF NOT EXISTS ipbx_id VARCHAR(64);
+ALTER TABLE student_calling_access ADD COLUMN IF NOT EXISTS dial_no VARCHAR(64);
 
 CREATE TABLE IF NOT EXISTS hostel_call_logs (
   id BIGSERIAL PRIMARY KEY,

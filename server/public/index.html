@@ -3,125 +3,328 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>School Calling Booth - Admin Panel</title>
+  <title>Calling Schedule (IPBX)</title>
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-    body { margin: 0; background: #f1f5f9; color: #0f172a; }
-    header { background: #0f172a; color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { margin: 0; font-size: 18px; }
-    .wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
-    .card { background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; margin-bottom: 16px; }
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-    .tab { padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a; cursor: pointer; font-weight: 700; }
-    .tab.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    input, select { padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
-    button { padding: 9px 15px; border: 0; border-radius: 6px; background: #1d4ed8; color: #fff; font-weight: 700; cursor: pointer; }
-    button.green { background: #16a34a; }
-    button.red { background: #dc2626; }
-    button.gray { background: #475569; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
-    th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
-    th { background: #f8fafc; font-weight: 700; }
-    .hidden { display: none; }
-    .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
-    .ok { background: #dcfce7; color: #166534; }
-    .off { background: #fee2e2; color: #991b1b; }
+    body { margin: 0; background: #eef4fb; color: #0f172a; }
+    header { background: #fff; border-bottom: 1px solid #dbe3ef; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    header h1 { margin: 0; font-size: 18px; color: #166534; font-weight: 800; }
+    .wrap { max-width: 1380px; margin: 14px auto; padding: 0 14px 40px; }
+    .subbar { background: #fff; border: 1px solid #dbe3ef; border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .subbar-title { font-size: 20px; font-weight: 800; color: #0f2c59; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    button { border: 0; border-radius: 7px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    button.tab { background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; }
+    button.tab.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+    button.primary { background: #1d4ed8; color: #fff; }
+    button.green { background: #16a34a; color: #fff; }
+    button.red { background: #dc2626; color: #fff; }
+    button.gray { background: #475569; color: #fff; }
+    .card { background: #fff; border: 1px solid #d5e0ec; border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .card-title { font-size: 18px; font-weight: 800; color: #0f2c59; margin: 0; }
+    .card-sub { font-size: 12px; color: #64748b; margin-top: 3px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .toggle-pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 20px; border: 1.5px solid #cbd5e1; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .toggle-pill.off { border-color: #fca5a5; color: #dc2626; background: #fef2f2; }
+    .toggle-pill.on { border-color: #86efac; color: #15803d; background: #f0fdf4; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot.on { background: #16a34a; }
+    .dot.off { background: #dc2626; }
+    .filters-bar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .pill { padding: 5px 11px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #334155; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .pill.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+    input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; color: #0f172a; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #e2e8f0; padding: 9px 10px; text-align: left; white-space: nowrap; }
+    thead tr { background: #0f172a; color: #fff; }
+    th { font-weight: 700; font-size: 12px; }
+    .act-btn { padding: 5px 9px; border-radius: 5px; font-size: 11px; font-weight: 700; color: #fff; margin-right: 4px; }
+    .badge { padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 700; border: 0; cursor: pointer; }
+    .badge.ok { background: #dcfce7; color: #15803d; }
+    .badge.off { background: #fee2e2; color: #b91c1c; }
+    .days-txt { color: #1d4ed8; font-weight: 700; }
+    .talk-txt { color: #16a34a; font-weight: 800; }
+    .hidden { display: none !important; }
+    .modal-bg { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+    .modal { background: #fff; border-radius: 12px; width: 100%; max-width: 680px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal.wide { max-width: 1060px; }
+    .modal-head { background: #0f172a; color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { margin: 0; font-size: 16px; }
+    .modal-body { padding: 16px; overflow-y: auto; }
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .field label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+    .field input, .field select { width: 100%; }
+    .day-chk { display: inline-flex; align-items: center; gap: 4px; padding: 5px 9px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: #f8fafc; }
   </style>
 </head>
 <body>
   <header>
-    <h1 id="schoolTitle">School Calling Booth System</h1>
-    <div id="userBar" class="hidden row">
-      <span id="userInfo" style="font-size:13px;"></span>
+    <h1 id="schoolTitle">Al Ameen Khadija - Calling System</h1>
+    <div id="userBar" class="row hidden">
+      <span id="userInfo" style="font-size:13px;font-weight:700;color:#334155;"></span>
       <button class="red" onclick="logout()">Logout</button>
     </div>
   </header>
 
   <div class="wrap">
     <div id="loginBox" class="card" style="max-width:400px;margin:60px auto;">
-      <h2 style="margin-top:0;">Admin Login</h2>
+      <h2 style="margin-top:0;color:#0f2c59;">Admin Login</h2>
       <div style="display:grid;gap:10px;">
         <input id="loginId" placeholder="Login ID (e.g. ADMIN001)" />
-        <input id="loginPass" type="password" placeholder="Password" />
-        <button onclick="login()">Sign In</button>
-        <div id="loginErr" style="color:#dc2626;font-size:13px;"></div>
+        <input id="loginPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')login()" />
+        <button class="primary" onclick="login()">Sign In</button>
+        <div id="loginErr" style="color:#dc2626;font-size:13px;font-weight:700;"></div>
       </div>
     </div>
 
     <div id="appBox" class="hidden">
-      <div class="tabs">
-        <button class="tab active" onclick="showTab('logs', this)">Call Logs & Recordings</button>
-        <button class="tab" onclick="showTab('students', this)">Students & Contacts</button>
-        <button class="tab" onclick="showTab('schedules', this)">Calling Schedules & Settings</button>
+      <div class="subbar">
+        <div class="subbar-title">Calling Schedule (IPBX)</div>
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('schedules', this)">Schedules</button>
+          <button class="tab" onclick="showTab('logs', this)">Call Logs</button>
+          <button class="tab" onclick="showTab('students', this)">Students &amp; Contacts</button>
+        </div>
       </div>
 
-      <div id="tab-logs" class="card">
-        <div class="row" style="justify-content:space-between;">
-          <h3 style="margin:0;">Call Logs</h3>
+      <!-- TAB 1: HOSTEL CALLING SCHEDULE -->
+      <div id="tab-schedules" class="card">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Hostel Calling Schedule</h2>
+            <div class="card-sub">Configure calling hours, talk-time limit, and allowed days per class</div>
+          </div>
           <div class="row">
-            <input id="logSearch" placeholder="Search Reg No / Name" />
-            <input id="logDate" type="date" />
-            <button onclick="loadLogs()">Search</button>
+            <button id="incomingBtn" class="toggle-pill off" onclick="toggleBoothSetting('incoming')">
+              <span class="dot off"></span><span>Incoming Calls: OFF (Blocked)</span>
+            </button>
+            <button id="recordingBtn" class="toggle-pill on" onclick="toggleBoothSetting('recording')">
+              <span class="dot on"></span><span>Recording: ON</span>
+            </button>
+            <button class="primary" onclick="openScheduleModal()">+ Add Schedule</button>
           </div>
         </div>
-        <table>
-          <thead><tr><th>Time</th><th>Reg No</th><th>Student</th><th>Relation</th><th>Mobile</th><th>Duration</th><th>Status</th><th>Recording</th></tr></thead>
-          <tbody id="logsBody"></tbody>
-        </table>
+
+        <div class="filters-bar">
+          <span style="font-size:12px;font-weight:700;color:#475569;">Class:</span>
+          <div id="classFilterPills" class="row"></div>
+          <span style="font-size:12px;font-weight:700;color:#475569;margin-left:12px;">Status:</span>
+          <div id="statusFilterPills" class="row">
+            <button class="pill active" onclick="setStatusFilter('all', this)">All</button>
+            <button class="pill" onclick="setStatusFilter('active', this)">Active</button>
+            <button class="pill" onclick="setStatusFilter('inactive', this)">Inactive</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Action</th>
+                <th>Status</th>
+                <th>Class</th>
+                <th>Session</th>
+                <th>Gender</th>
+                <th>Days</th>
+                <th>Timing</th>
+                <th>Talk Time</th>
+              </tr>
+            </thead>
+            <tbody id="schBody"></tbody>
+          </table>
+        </div>
       </div>
 
+      <!-- TAB 2: CALL LOGS -->
+      <div id="tab-logs" class="card hidden">
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Call Logs &amp; MP3 Recordings</h2>
+            <div class="card-sub">Filter by date range, student, or phone number and export to Excel</div>
+          </div>
+          <div class="row">
+            <input id="logReg" placeholder="Reg No" style="width:100px;" />
+            <input id="logSearch" placeholder="Student Name" style="width:150px;" />
+            <input id="logFrom" type="date" />
+            <input id="logTo" type="date" />
+            <button class="primary" onclick="loadLogs()">Search</button>
+            <button class="green" onclick="exportLogsExcel()">Export Excel</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date &amp; Time</th>
+                <th>Reg No</th>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Relation</th>
+                <th>Dialed Mobile</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Recording</th>
+              </tr>
+            </thead>
+            <tbody id="logsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: STUDENTS & CONTACTS -->
       <div id="tab-students" class="card hidden">
-        <div class="row" style="justify-content:space-between;margin-bottom:12px;">
-          <h3 style="margin:0;">Students & Guardian Numbers</h3>
+        <div class="card-head">
+          <div>
+            <h2 class="card-title">Students &amp; Guardian Numbers</h2>
+            <div class="card-sub">Import from Excel (.xlsx), add/edit student numbers, or toggle active status</div>
+          </div>
           <div class="row">
             <input id="excelFile" type="file" accept=".xlsx" />
             <button class="green" onclick="importExcel()">Import Excel (.xlsx)</button>
           </div>
         </div>
-        <div class="row" style="background:#f8fafc;padding:10px;border-radius:8px;margin-bottom:10px;">
-          <input id="sReg" placeholder="Reg No *" style="width:110px;" />
-          <input id="sName" placeholder="Student Name *" />
-          <input id="sClass" placeholder="Class *" style="width:90px;" />
+
+        <div class="filters-bar">
+          <input id="sReg" placeholder="Reg No *" style="width:100px;" />
+          <input id="sName" placeholder="Student Name *" style="width:170px;" />
+          <input id="sClass" placeholder="Class *" style="width:100px;" />
           <input id="sFather" placeholder="Father Mobile" style="width:130px;" />
           <input id="sMother" placeholder="Mother Mobile" style="width:130px;" />
-          <input id="sG1" placeholder="Guardian 1 Mobile" style="width:140px;" />
+          <input id="sG1" placeholder="Guardian 1 Mobile" style="width:135px;" />
           <input id="sG1Rel" placeholder="Relation" style="width:100px;" />
-          <button onclick="saveStudent()">Add / Update</button>
+          <button class="primary" onclick="saveStudent()">Add / Update</button>
         </div>
-        <div class="row">
-          <input id="stuSearch" placeholder="Search Reg No / Name" />
+
+        <div class="row" style="margin-bottom:10px;">
+          <input id="stuSearch" placeholder="Search Reg No / Name" onkeydown="if(event.key==='Enter')loadStudents()" />
+          <select id="stuClassFilter" onchange="loadStudents()"><option value="">All Classes</option></select>
           <button class="gray" onclick="loadStudents()">Filter</button>
         </div>
-        <table>
-          <thead><tr><th>Reg No</th><th>Name</th><th>Class</th><th>Father</th><th>Mother</th><th>Guardian 1</th><th>Status</th></tr></thead>
-          <tbody id="stuBody"></tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Reg No</th>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Father</th>
+                <th>Mother</th>
+                <th>Guardian 1</th>
+                <th>Guardian 2</th>
+                <th>Status</th>
+                <th>Edit</th>
+              </tr>
+            </thead>
+            <tbody id="stuBody"></tbody>
+          </table>
+        </div>
       </div>
+    </div>
+  </div>
 
-      <div id="tab-schedules" class="card hidden">
-        <div class="row" style="justify-content:space-between;margin-bottom:12px;">
-          <h3 style="margin:0;">Calling Schedules & Recording</h3>
-          <button id="recToggleBtn" onclick="toggleRecording()">Loading Recording Status...</button>
+  <!-- ADD / EDIT SCHEDULE MODAL -->
+  <div id="schModal" class="modal-bg hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="schModalTitle">Add Calling Schedule</h3>
+        <button class="red" style="padding:4px 10px;" onclick="closeModal('schModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editSchId" />
+        <div class="grid2">
+          <div class="field"><label>Class *</label><input id="mSchClass" placeholder="e.g. VI CBSE" /></div>
+          <div class="field"><label>Session *</label><input id="mSchSession" value="2026" /></div>
+          <div class="field"><label>Gender</label>
+            <select id="mSchGender"><option value="Female">Female</option><option value="Male">Male</option><option value="All">All</option></select>
+          </div>
+          <div class="field"><label>Talk Time (minutes)</label><input id="mSchMin" type="number" value="8" /></div>
+          <div class="field"><label>Start Time (HH:MM)</label><input id="mSchStart" value="04:00" /></div>
+          <div class="field"><label>End Time (HH:MM)</label><input id="mSchEnd" value="23:55" /></div>
         </div>
-        <div class="row" style="background:#f8fafc;padding:10px;border-radius:8px;margin-bottom:10px;">
-          <input id="schClass" placeholder="Class (e.g. X or ALL)" />
-          <input id="schMin" type="number" value="8" placeholder="Minutes" style="width:90px;" />
-          <input id="schStart" value="06:00" style="width:90px;" />
-          <input id="schEnd" value="22:00" style="width:90px;" />
-          <button onclick="addSchedule()">Add Schedule</button>
+        <div class="field" style="margin-top:12px;">
+          <label>Allowed Days</label>
+          <div class="row" id="mSchDays">
+            <label class="day-chk"><input type="checkbox" value="Sun" checked /> Sun</label>
+            <label class="day-chk"><input type="checkbox" value="Mon" /> Mon</label>
+            <label class="day-chk"><input type="checkbox" value="Tue" /> Tue</label>
+            <label class="day-chk"><input type="checkbox" value="Wed" /> Wed</label>
+            <label class="day-chk"><input type="checkbox" value="Thu" /> Thu</label>
+            <label class="day-chk"><input type="checkbox" value="Fri" /> Fri</label>
+            <label class="day-chk"><input type="checkbox" value="Sat" /> Sat</label>
+          </div>
         </div>
-        <table>
-          <thead><tr><th>Class</th><th>Minutes/Week</th><th>Time</th><th>Days</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody id="schBody"></tbody>
-        </table>
+        <div class="row" style="justify-content:flex-end;margin-top:16px;">
+          <button class="gray" onclick="closeModal('schModal')">Cancel</button>
+          <button class="primary" onclick="saveSchedule()">Save Schedule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE STUDENTS MODAL -->
+  <div id="stuSchedModal" class="modal-bg hidden">
+    <div class="modal wide">
+      <div class="modal-head">
+        <h3 id="stuSchedTitle">Schedule Students</h3>
+        <button class="red" style="padding:4px 10px;" onclick="closeModal('stuSchedModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="row" style="margin-bottom:10px;">
+          <input id="stuSchedSearch" placeholder="Search by Student Reg No or Name..." oninput="filterSchedStudents()" style="flex:1;min-width:240px;" />
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Reg No</th><th>Student Name</th><th>Guardian Numbers (Dial 1, 2, 3...)</th><th>Emergency Call</th><th>Action</th></tr>
+            </thead>
+            <tbody id="stuSchedBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT STUDENT CONTACTS MODAL -->
+  <div id="contactModal" class="modal-bg hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="contactTitle">Edit Guardian Contacts</h3>
+        <button class="red" style="padding:4px 10px;" onclick="closeModal('contactModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="cStuId" />
+        <div class="grid2">
+          <div class="field"><label>Father Mobile</label><input id="cFather" /></div>
+          <div class="field"><label>Mother Mobile</label><input id="cMother" /></div>
+          <div class="field"><label>Guardian 1 Mobile</label><input id="cG1" /></div>
+          <div class="field"><label>Guardian 1 Relation</label><input id="cG1Rel" placeholder="e.g. Brother" /></div>
+          <div class="field"><label>Guardian 2 Mobile</label><input id="cG2" /></div>
+          <div class="field"><label>Guardian 2 Relation</label><input id="cG2Rel" placeholder="e.g. Uncle" /></div>
+          <div class="field"><label>Guardian 3 Mobile</label><input id="cG3" /></div>
+          <div class="field"><label>Guardian 3 Relation</label><input id="cG3Rel" /></div>
+        </div>
+        <div class="row" style="justify-content:flex-end;margin-top:16px;">
+          <button class="gray" onclick="closeModal('contactModal')">Cancel</button>
+          <button class="green" onclick="saveContacts()">Save Contacts</button>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
 const tokenKey = 'school_calling_token';
+let allSchedules = [];
+let classFilter = 'ALL';
+let statusFilter = 'all';
+let boothSettings = { incoming_calls_enabled: false, call_recording_enabled: true };
+let activeSchedId = null;
+
 function getToken() { return localStorage.getItem(tokenKey) || ''; }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 async function api(url, opts = {}) {
   const headers = opts.headers || {};
   if (getToken()) headers['Authorization'] = 'Bearer ' + getToken();
@@ -134,20 +337,22 @@ async function api(url, opts = {}) {
 
 async function login() {
   try {
+    loginErr.textContent = '';
     const d = await api('/api/login', { method: 'POST', body: JSON.stringify({ login_id: loginId.value, password: loginPass.value }) });
     localStorage.setItem(tokenKey, d.token);
     initApp(d);
   } catch (e) { loginErr.textContent = e.message; }
 }
 function logout() { localStorage.removeItem(tokenKey); location.reload(); }
+
 function showTab(name, btn) {
-  ['logs','students','schedules'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
+  ['schedules','logs','students'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
   document.getElementById('tab-' + name).classList.remove('hidden');
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('button.tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  if (name === 'schedules') loadSchedules();
   if (name === 'logs') loadLogs();
   if (name === 'students') loadStudents();
-  if (name === 'schedules') loadSchedules();
 }
 
 async function initApp(d) {
@@ -156,82 +361,307 @@ async function initApp(d) {
   loginBox.classList.add('hidden');
   appBox.classList.remove('hidden');
   userBar.classList.remove('hidden');
-  loadLogs();
+  await loadSchedules();
+}
+
+function renderSettingsButtons() {
+  const inc = !!boothSettings.incoming_calls_enabled;
+  const rec = !!boothSettings.call_recording_enabled;
+  incomingBtn.className = 'toggle-pill ' + (inc ? 'on' : 'off');
+  incomingBtn.innerHTML = `<span class="dot ${inc ? 'on' : 'off'}"></span><span>Incoming Calls: ${inc ? 'ON (Allowed)' : 'OFF (Blocked)'}</span>`;
+  recordingBtn.className = 'toggle-pill ' + (rec ? 'on' : 'off');
+  recordingBtn.innerHTML = `<span class="dot ${rec ? 'on' : 'off'}"></span><span>Recording: ${rec ? 'ON' : 'OFF'}</span>`;
+}
+
+async function toggleBoothSetting(which) {
+  const payload = which === 'incoming'
+    ? { incoming_calls_enabled: !boothSettings.incoming_calls_enabled }
+    : { call_recording_enabled: !boothSettings.call_recording_enabled };
+  const r = await api('/api/calling-schedules/settings', { method: 'PATCH', body: JSON.stringify(payload) });
+  boothSettings = r.settings || boothSettings;
+  renderSettingsButtons();
+}
+
+function setClassFilter(cls, btn) {
+  classFilter = cls;
+  renderSchedulesTable();
+}
+function setStatusFilter(st, btn) {
+  statusFilter = st;
+  document.querySelectorAll('#statusFilterPills .pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderSchedulesTable();
+}
+
+async function loadSchedules() {
+  const [sRes, cfgRes] = await Promise.all([
+    api('/api/calling-schedules'),
+    api('/api/calling-schedules/settings')
+  ]);
+  allSchedules = sRes.schedules || [];
+  boothSettings = cfgRes.settings || boothSettings;
+  renderSettingsButtons();
+
+  const classes = ['ALL', ...new Set(allSchedules.map(x => x.class_name).filter(Boolean))];
+  if (!classes.includes(classFilter)) classFilter = 'ALL';
+  classFilterPills.innerHTML = classes.map(c =>
+    `<button class="pill ${classFilter === c ? 'active' : ''}" onclick="setClassFilter('${c.replace(/'/g,"\\'")}', this)">${c === 'ALL' ? 'All' : c}</button>`
+  ).join('');
+
+  renderSchedulesTable();
+}
+
+function renderSchedulesTable() {
+  const rows = allSchedules.filter(x => {
+    if (classFilter !== 'ALL' && x.class_name !== classFilter) return false;
+    if (statusFilter === 'active' && !x.is_active) return false;
+    if (statusFilter === 'inactive' && x.is_active) return false;
+    return true;
+  });
+  schBody.innerHTML = rows.length ? rows.map((x, i) => `<tr>
+    <td>${i + 1}</td>
+    <td>
+      <button class="act-btn primary" onclick="openScheduleStudents(${x.id})">Students</button>
+      <button class="act-btn green" onclick="openScheduleModal(${x.id})">Edit</button>
+      <button class="act-btn red" onclick="deleteSchedule(${x.id})">Del</button>
+    </td>
+    <td><button class="badge ${x.is_active ? 'ok' : 'off'}" onclick="toggleSch(${x.id})">${x.is_active ? 'Active' : 'Inactive'}</button></td>
+    <td style="font-weight:800;">${x.class_name}</td>
+    <td>${x.session_name || '-'}</td>
+    <td>${x.gender || 'All'}</td>
+    <td class="days-txt">${Array.isArray(x.days) ? x.days.join(', ') : (x.days || '-')}</td>
+    <td>${x.start_time} - ${x.end_time}</td>
+    <td class="talk-txt">${x.allowed_talk_time} min</td>
+  </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;color:#64748b;padding:24px;">No schedules found. Click "+ Add Schedule" to create one.</td></tr>';
+}
+
+function openScheduleModal(id = null) {
+  editSchId.value = id || '';
+  if (id) {
+    const x = allSchedules.find(s => s.id === id);
+    if (!x) return;
+    schModalTitle.textContent = 'Edit Schedule (' + x.class_name + ')';
+    mSchClass.value = x.class_name || '';
+    mSchSession.value = x.session_name || '2026';
+    mSchGender.value = x.gender || 'Female';
+    mSchMin.value = x.allowed_talk_time || 8;
+    mSchStart.value = x.start_time || '04:00';
+    mSchEnd.value = x.end_time || '23:55';
+    const dSet = new Set(Array.isArray(x.days) ? x.days : []);
+    document.querySelectorAll('#mSchDays input[type=checkbox]').forEach(cb => cb.checked = dSet.has(cb.value));
+  } else {
+    schModalTitle.textContent = 'Add Calling Schedule';
+    mSchClass.value = '';
+    mSchSession.value = '2026';
+    mSchGender.value = 'Female';
+    mSchMin.value = 8;
+    mSchStart.value = '04:00';
+    mSchEnd.value = '23:55';
+    document.querySelectorAll('#mSchDays input[type=checkbox]').forEach(cb => cb.checked = cb.value === 'Sun');
+  }
+  schModal.classList.remove('hidden');
+}
+
+async function saveSchedule() {
+  try {
+    const days = [...document.querySelectorAll('#mSchDays input[type=checkbox]:checked')].map(cb => cb.value);
+    const body = {
+      class_name: mSchClass.value.trim(),
+      session_name: mSchSession.value.trim() || '2026',
+      gender: mSchGender.value,
+      allowed_talk_time: Number(mSchMin.value || 8),
+      start_time: mSchStart.value.trim() || '04:00',
+      end_time: mSchEnd.value.trim() || '23:55',
+      days: days.length ? days : ['Sun'],
+    };
+    if (!body.class_name) return alert('Class is required');
+    const id = editSchId.value;
+    if (id) await api('/api/calling-schedules/' + id, { method: 'PUT', body: JSON.stringify(body) });
+    else await api('/api/calling-schedules', { method: 'POST', body: JSON.stringify(body) });
+    closeModal('schModal');
+    loadSchedules();
+  } catch (e) { alert(e.message); }
+}
+
+async function toggleSch(id) {
+  await api('/api/calling-schedules/' + id + '/toggle-status', { method: 'PATCH' });
+  loadSchedules();
+}
+async function deleteSchedule(id) {
+  if (!confirm('Delete this calling schedule?')) return;
+  await api('/api/calling-schedules/' + id, { method: 'DELETE' });
+  loadSchedules();
+}
+
+let activeSchedStudents = [];
+function dialBadge(num, color, numVal, label) {
+  if (!numVal) return '';
+  return `<div style="margin:2px 0;display:flex;align-items:center;gap:6px;">
+    <span style="background:${color};color:#fff;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:800;">Dial ${num}</span>
+    <span style="font-weight:700;color:#0f172a;">${numVal}</span>
+    <span style="color:#475569;font-size:12px;">— <b>${label}</b></span>
+  </div>`;
+}
+function renderSchedStudents(list) {
+  stuSchedBody.innerHTML = list.length ? list.map((st, idx) => {
+    const dials = [
+      dialBadge(1, '#2563eb', st.father_mobile, 'Father'),
+      dialBadge(2, '#7c3aed', st.mother_mobile, 'Mother'),
+      dialBadge(3, '#16a34a', st.guardian_1_mobile, st.guardian_1_relation || 'Guardian 1'),
+      dialBadge(4, '#d97706', st.guardian_2_mobile, st.guardian_2_relation || 'Guardian 2'),
+      dialBadge(5, '#0891b2', st.guardian_3_mobile, st.guardian_3_relation || 'Guardian 3'),
+    ].filter(Boolean).join('') || '<span style="color:#94a3b8;">No numbers added</span>';
+    return `<tr>
+      <td>${idx + 1}</td>
+      <td style="font-weight:800;color:#1d4ed8;">${st.registration_no}</td>
+      <td style="font-weight:700;">${st.student_name}</td>
+      <td>${dials}</td>
+      <td><button class="badge ${st.is_emergency_call ? 'on ok' : 'off'}" onclick="toggleEmergency(${st.student_id}, ${!st.is_emergency_call})">${st.is_emergency_call ? 'ON (15m)' : '✕ Off'}</button></td>
+      <td><button class="act-btn" style="background:#f1f5f9;color:#1e293b;border:1px solid #cbd5e1;" onclick="openContactsModal(${st.student_id})">✎ Edit Numbers</button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;">No active students matching filter.</td></tr>';
+}
+function filterSchedStudents() {
+  const q = (stuSchedSearch.value || '').trim().toLowerCase();
+  const filtered = !q ? activeSchedStudents : activeSchedStudents.filter(st =>
+    String(st.registration_no || '').toLowerCase().includes(q) ||
+    String(st.student_name || '').toLowerCase().includes(q)
+  );
+  renderSchedStudents(filtered);
+}
+async function openScheduleStudents(id) {
+  activeSchedId = id;
+  const d = await api('/api/calling-schedules/' + id + '/students');
+  activeSchedStudents = d.students || [];
+  stuSchedSearch.value = '';
+  const daysStr = Array.isArray(d.schedule.days) ? d.schedule.days.join(', ') : (d.schedule.days || '');
+  stuSchedTitle.textContent = `Schedule Details: Class ${d.schedule.class_name} (${d.schedule.gender || 'All'}) — ${daysStr} | ${d.schedule.start_time} - ${d.schedule.end_time} | Max ${d.schedule.allowed_talk_time}m (${activeSchedStudents.length})`;
+  renderSchedStudents(activeSchedStudents);
+  stuSchedModal.classList.remove('hidden');
+}
+
+async function toggleEmergency(studentId, nextVal) {
+  await api('/api/calling-schedules/emergency-call/' + studentId, {
+    method: 'PATCH',
+    body: JSON.stringify({ is_emergency_call: nextVal })
+  });
+  if (activeSchedId) openScheduleStudents(activeSchedId);
+}
+
+async function openContactsModal(studentId) {
+  const d = await api('/api/calling-schedules/student-contacts/' + studentId);
+  cStuId.value = studentId;
+  contactTitle.textContent = `Edit Numbers: ${d.student.student_name} (${d.student.registration_no})`;
+  cFather.value = d.contacts.father_mobile || '';
+  cMother.value = d.contacts.mother_mobile || '';
+  cG1.value = d.contacts.guardian_1_mobile || '';
+  cG1Rel.value = d.contacts.guardian_1_relation || '';
+  cG2.value = d.contacts.guardian_2_mobile || '';
+  cG2Rel.value = d.contacts.guardian_2_relation || '';
+  cG3.value = d.contacts.guardian_3_mobile || '';
+  cG3Rel.value = d.contacts.guardian_3_relation || '';
+  contactModal.classList.remove('hidden');
+}
+
+async function saveContacts() {
+  try {
+    await api('/api/calling-schedules/student-contacts/' + cStuId.value, {
+      method: 'PUT',
+      body: JSON.stringify({
+        father_mobile: cFather.value.trim(),
+        mother_mobile: cMother.value.trim(),
+        guardian_1_mobile: cG1.value.trim(),
+        guardian_1_relation: cG1Rel.value.trim(),
+        guardian_2_mobile: cG2.value.trim(),
+        guardian_2_relation: cG2Rel.value.trim(),
+        guardian_3_mobile: cG3.value.trim(),
+        guardian_3_relation: cG3Rel.value.trim(),
+      })
+    });
+    closeModal('contactModal');
+    if (activeSchedId && !stuSchedModal.classList.contains('hidden')) openScheduleStudents(activeSchedId);
+    if (!document.getElementById('tab-students').classList.contains('hidden')) loadStudents();
+  } catch (e) { alert(e.message); }
 }
 
 async function loadLogs() {
   const p = new URLSearchParams();
-  if (logSearch.value) p.set('student', logSearch.value);
-  if (logDate.value) { p.set('from_date', logDate.value); p.set('to_date', logDate.value); }
+  if (logReg.value) p.set('reg_no', logReg.value.trim());
+  if (logSearch.value) p.set('student', logSearch.value.trim());
+  if (logFrom.value) p.set('from_date', logFrom.value);
+  if (logTo.value) p.set('to_date', logTo.value);
   const d = await api('/api/calls/logs?' + p.toString());
-  logsBody.innerHTML = (d.calls || d.logs || []).map(l => `<tr>
-    <td>${new Date(l.started_at || l.created_at).toLocaleString()}</td>
+  const rows = d.calls || [];
+  logsBody.innerHTML = rows.length ? rows.map((l, i) => `<tr>
+    <td>${i + 1}</td>
+    <td>${new Date(l.started_at || l.created_at).toLocaleString('en-IN')}</td>
     <td>${l.reg_no || '-'}</td>
-    <td>${l.student_name || '-'}</td>
+    <td style="font-weight:700;">${l.student_name || '-'}</td>
+    <td>${l.class_name || '-'}</td>
     <td>${l.called_relation || '-'}</td>
     <td>${l.to_number || '-'}</td>
-    <td>${l.duration ?? l.call_duration_seconds ?? 0}s</td>
-    <td>${l.status || '-'}</td>
+    <td>${l.duration ?? 0}s</td>
+    <td><span class="badge ${l.status === 'completed' ? 'ok' : 'off'}">${l.status || '-'}</span></td>
     <td>${l.recording_url ? `<audio controls preload="none" src="${l.recording_url.startsWith('http') ? l.recording_url : l.recording_url + '?token=' + encodeURIComponent(getToken())}" style="height:30px;"></audio>` : '-'}</td>
-  </tr>`).join('');
+  </tr>`).join('') : '<tr><td colspan="10" style="text-align:center;color:#64748b;padding:24px;">No call logs found.</td></tr>';
+}
+
+async function exportLogsExcel() {
+  const p = new URLSearchParams();
+  if (logReg.value) p.set('reg_no', logReg.value.trim());
+  if (logSearch.value) p.set('student', logSearch.value.trim());
+  if (logFrom.value) p.set('from_date', logFrom.value);
+  if (logTo.value) p.set('to_date', logTo.value);
+  const r = await fetch('/api/calls/logs/export?' + p.toString(), { headers: { Authorization: 'Bearer ' + getToken() } });
+  const blob = await r.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Call_Logs.xlsx';
+  a.click();
 }
 
 async function loadStudents() {
-  const d = await api('/api/students?q=' + encodeURIComponent(stuSearch.value || ''));
-  stuBody.innerHTML = (d.students || []).map(s => `<tr>
-    <td>${s.registration_no}</td><td>${s.student_name}</td><td>${s.class_name}</td>
+  const p = new URLSearchParams();
+  if (stuSearch.value) p.set('q', stuSearch.value.trim());
+  if (stuClassFilter.value) p.set('class_name', stuClassFilter.value);
+  const d = await api('/api/students?' + p.toString());
+  const list = d.students || [];
+  if (!stuClassFilter.value && list.length) {
+    const clsList = [...new Set(list.map(x => x.class_name).filter(Boolean))].sort();
+    stuClassFilter.innerHTML = '<option value="">All Classes</option>' + clsList.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+  stuBody.innerHTML = list.length ? list.map(s => `<tr>
+    <td>${s.registration_no}</td>
+    <td style="font-weight:700;">${s.student_name}</td>
+    <td>${s.class_name}</td>
     <td>${s.c_father_mobile || s.father_mobile || '-'}</td>
     <td>${s.c_mother_mobile || s.mother_mobile || '-'}</td>
-    <td>${s.guardian_1_mobile ? s.guardian_1_mobile + ' (' + (s.guardian_1_relation||'') + ')' : '-'}</td>
+    <td>${s.guardian_1_mobile ? s.guardian_1_mobile + ' (' + (s.guardian_1_relation || '') + ')' : '-'}</td>
+    <td>${s.guardian_2_mobile ? s.guardian_2_mobile + ' (' + (s.guardian_2_relation || '') + ')' : '-'}</td>
     <td><button class="badge ${s.is_active ? 'ok' : 'off'}" onclick="toggleStu(${s.id})">${s.is_active ? 'Active' : 'Inactive'}</button></td>
-  </tr>`).join('');
+    <td><button class="act-btn primary" onclick="openContactsModal(${s.id})">Edit Numbers</button></td>
+  </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;color:#64748b;padding:24px;">No students found. Import Excel or add manually.</td></tr>';
 }
+
 async function saveStudent() {
-  await api('/api/students', { method: 'POST', body: JSON.stringify({
-    registration_no: sReg.value, student_name: sName.value, class_name: sClass.value,
-    father_mobile: sFather.value, mother_mobile: sMother.value, guardian_1_mobile: sG1.value, guardian_1_relation: sG1Rel.value
-  })});
-  sReg.value = sName.value = sFather.value = sMother.value = sG1.value = sG1Rel.value = '';
-  loadStudents();
+  try {
+    await api('/api/students', { method: 'POST', body: JSON.stringify({
+      registration_no: sReg.value, student_name: sName.value, class_name: sClass.value,
+      father_mobile: sFather.value, mother_mobile: sMother.value, guardian_1_mobile: sG1.value, guardian_1_relation: sG1Rel.value
+    })});
+    sReg.value = sName.value = sFather.value = sMother.value = sG1.value = sG1Rel.value = '';
+    loadStudents();
+  } catch (e) { alert(e.message); }
 }
 async function toggleStu(id) { await api('/api/students/' + id + '/toggle-active', { method: 'PATCH' }); loadStudents(); }
 async function importExcel() {
-  if (!excelFile.files[0]) return alert('Select an .xlsx file first');
-  const fd = new FormData(); fd.append('file', excelFile.files[0]);
-  const r = await api('/api/students/import-excel', { method: 'POST', body: fd });
-  alert('Imported ' + r.imported + ' students!');
-  loadStudents();
-}
-
-async function loadSchedules() {
-  const [sRes, rRes] = await Promise.all([api('/api/calling-schedules'), api('/api/calling-schedules/recording-status')]);
-  recToggleBtn.textContent = 'Call Recording: ' + (rRes.enabled ? 'ON' : 'OFF');
-  recToggleBtn.className = rRes.enabled ? 'green' : 'red';
-  schBody.innerHTML = (sRes.schedules || []).map(x => `<tr>
-    <td>${x.class_name}</td><td>${x.allowed_talk_time}m</td><td>${x.start_time} - ${x.end_time}</td>
-    <td>${(x.days || []).join(', ')}</td>
-    <td><span class="badge ${x.is_active ? 'ok' : 'off'}">${x.is_active ? 'Active' : 'Off'}</span></td>
-    <td><button class="gray" onclick="toggleSch(${x.id})">Toggle</button></td>
-  </tr>`).join('');
-}
-async function addSchedule() {
   try {
-    await api('/api/calling-schedules', { method: 'POST', body: JSON.stringify({
-      session_name: '2026-2027',
-      class_name: schClass.value || 'ALL',
-      allowed_talk_time: Number(schMin.value || 8),
-      start_time: schStart.value || '06:00',
-      end_time: schEnd.value || '22:00',
-      days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-    })});
-    loadSchedules();
+    if (!excelFile.files[0]) return alert('Select an .xlsx file first');
+    const fd = new FormData(); fd.append('file', excelFile.files[0]);
+    const r = await api('/api/students/import-excel', { method: 'POST', body: fd });
+    alert('Imported ' + r.imported + ' students successfully!');
+    loadStudents();
   } catch (e) { alert(e.message); }
-}
-async function toggleSch(id) { await api('/api/calling-schedules/' + id + '/toggle', { method: 'PATCH' }); loadSchedules(); }
-async function toggleRecording() {
-  const cur = recToggleBtn.textContent.includes('ON');
-  await api('/api/calling-schedules/recording-toggle', { method: 'POST', body: JSON.stringify({ enabled: !cur }) });
-  loadSchedules();
 }
 
 if (getToken()) { api('/api/me').then(initApp).catch(() => localStorage.removeItem(tokenKey)); }

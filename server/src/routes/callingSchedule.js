@@ -311,7 +311,7 @@ router.get('/:id/students', auth, staffRoles, asyncHandler(async (req, res) => {
     LEFT JOIN student_guardian_contacts c ON c.student_id = s.id
     LEFT JOIN student_calling_access a ON a.student_id = s.id
     WHERE s.class_name = $1 AND s.is_active = TRUE
-    ORDER BY s.roll_no::integer NULLS LAST, s.registration_no ASC
+    ORDER BY NULLIF(regexp_replace(COALESCE(s.roll_no, ''), '\D', '', 'g'), '')::integer NULLS LAST, s.registration_no ASC
   `;
 
   const students = await pool.query(query, [schedule.class_name]);
