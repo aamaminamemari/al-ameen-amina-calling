@@ -12,7 +12,7 @@
     .wrap { max-width: 1200px; margin: 20px auto; padding: 0 16px; }
     .card { background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; margin-bottom: 16px; }
     .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-    .tab { padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 700; }
+    .tab { padding: 10px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a; cursor: pointer; font-weight: 700; }
     .tab.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     input, select { padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
@@ -215,12 +215,17 @@ async function loadSchedules() {
   </tr>`).join('');
 }
 async function addSchedule() {
-  await api('/api/calling-schedules', { method: 'POST', body: JSON.stringify({
-    class_name: schClass.value || 'ALL', allowed_talk_time: Number(schMin.value || 8),
-    start_time: schStart.value || '06:00', end_time: schEnd.value || '22:00',
-    days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
-  })});
-  loadSchedules();
+  try {
+    await api('/api/calling-schedules', { method: 'POST', body: JSON.stringify({
+      session_name: '2026-2027',
+      class_name: schClass.value || 'ALL',
+      allowed_talk_time: Number(schMin.value || 8),
+      start_time: schStart.value || '06:00',
+      end_time: schEnd.value || '22:00',
+      days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+    })});
+    loadSchedules();
+  } catch (e) { alert(e.message); }
 }
 async function toggleSch(id) { await api('/api/calling-schedules/' + id + '/toggle', { method: 'PATCH' }); loadSchedules(); }
 async function toggleRecording() {

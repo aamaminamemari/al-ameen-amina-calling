@@ -47,13 +47,15 @@ CREATE TABLE IF NOT EXISTS student_guardian_contacts (
 
 CREATE TABLE IF NOT EXISTS calling_schedules (
   id BIGSERIAL PRIMARY KEY,
+  branch_name VARCHAR(180),
   session_name VARCHAR(32) DEFAULT '2026-2027',
   class_name VARCHAR(64) NOT NULL,
-  gender VARCHAR(16),
+  section VARCHAR(32) DEFAULT '0',
+  gender VARCHAR(16) DEFAULT 'All',
   allowed_talk_time INTEGER NOT NULL DEFAULT 8,
-  days TEXT[] NOT NULL DEFAULT ARRAY['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
-  start_time VARCHAR(16) NOT NULL DEFAULT '06:00',
-  end_time VARCHAR(16) NOT NULL DEFAULT '22:00',
+  days JSONB NOT NULL DEFAULT '["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]'::jsonb,
+  start_time TIME NOT NULL DEFAULT '06:00'::time,
+  end_time TIME NOT NULL DEFAULT '22:00'::time,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

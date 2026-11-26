@@ -135,13 +135,13 @@ router.get('/', auth, staffRoles, asyncHandler(async (req, res) => {
  */
 router.post('/', auth, staffRoles, asyncHandler(async (req, res) => {
   const {
-    branch_name = 'Al-Ameen Mission Academy Memari (Khadija Campus)',
-    session_name,
+    branch_name = process.env.SCHOOL_NAME || 'School Calling Booth',
+    session_name = '2026-2027',
     class_name,
     section = '0',
-    gender = 'Female',
+    gender = 'All',
     allowed_talk_time = 8,
-    days = ['Sun', 'Sat'],
+    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     start_time = '04:00',
     end_time = '23:55',
     is_active = true
