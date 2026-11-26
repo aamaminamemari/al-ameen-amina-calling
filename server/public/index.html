@@ -66,7 +66,7 @@
           </div>
         </div>
         <table>
-          <thead><tr><th>Time</th><th>Reg No</th><th>Student</th><th>Relation</th><th>Duration</th><th>Status</th><th>Recording</th></tr></thead>
+          <thead><tr><th>Time</th><th>Reg No</th><th>Student</th><th>Relation</th><th>Mobile</th><th>Duration</th><th>Status</th><th>Recording</th></tr></thead>
           <tbody id="logsBody"></tbody>
         </table>
       </div>
@@ -161,16 +161,17 @@ async function initApp(d) {
 
 async function loadLogs() {
   const p = new URLSearchParams();
-  if (logSearch.value) p.set('q', logSearch.value);
-  if (logDate.value) { p.set('from', logDate.value); p.set('to', logDate.value); }
+  if (logSearch.value) p.set('student', logSearch.value);
+  if (logDate.value) { p.set('from_date', logDate.value); p.set('to_date', logDate.value); }
   const d = await api('/api/calls/logs?' + p.toString());
-  logsBody.innerHTML = (d.logs || []).map(l => `<tr>
-    <td>${new Date(l.created_at).toLocaleString()}</td>
+  logsBody.innerHTML = (d.calls || d.logs || []).map(l => `<tr>
+    <td>${new Date(l.started_at || l.created_at).toLocaleString()}</td>
     <td>${l.reg_no || '-'}</td>
     <td>${l.student_name || '-'}</td>
     <td>${l.called_relation || '-'}</td>
-    <td>${l.call_duration_seconds || 0}s</td>
-    <td>${l.status}</td>
+    <td>${l.to_number || '-'}</td>
+    <td>${l.duration ?? l.call_duration_seconds ?? 0}s</td>
+    <td>${l.status || '-'}</td>
     <td>${l.recording_url ? `<audio controls preload="none" src="${l.recording_url.startsWith('http') ? l.recording_url : l.recording_url + '?token=' + encodeURIComponent(getToken())}" style="height:30px;"></audio>` : '-'}</td>
   </tr>`).join('');
 }

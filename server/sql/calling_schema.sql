@@ -59,6 +59,13 @@ CREATE TABLE IF NOT EXISTS calling_schedules (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS calling_booth_settings (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  incoming_calls_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  call_recording_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS student_calling_access (
   id BIGSERIAL PRIMARY KEY,
   student_id BIGINT UNIQUE NOT NULL REFERENCES students(id) ON DELETE CASCADE,
@@ -67,20 +74,56 @@ CREATE TABLE IF NOT EXISTS student_calling_access (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS call_logs (
+CREATE TABLE IF NOT EXISTS hostel_call_logs (
   id BIGSERIAL PRIMARY KEY,
   student_id BIGINT REFERENCES students(id) ON DELETE SET NULL,
-  reg_no VARCHAR(64),
-  called_relation VARCHAR(64),
-  allowed_talk_time INTEGER,
+  student_name VARCHAR(180),
+  registration_no VARCHAR(64),
+  class_name VARCHAR(64),
+  contact_person VARCHAR(64),
+  phone_number VARCHAR(32),
+  call_status VARCHAR(32) NOT NULL DEFAULT 'completed',
   call_duration_seconds INTEGER NOT NULL DEFAULT 0,
   max_allowed_seconds INTEGER,
-  status VARCHAR(32) NOT NULL DEFAULT 'completed',
+  sim_slot VARCHAR(32),
+  gateway_type VARCHAR(64),
   recording_url TEXT,
+  notes TEXT,
   started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   ended_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS call_logs (
+  id BIGSERIAL PRIMARY KEY,
+  call_sid VARCHAR(120) UNIQUE,
+  from_number VARCHAR(64),
+  to_number VARCHAR(64),
+  caller_id VARCHAR(64),
+  student_id BIGINT REFERENCES students(id) ON DELETE SET NULL,
+  reg_no VARCHAR(64),
+  called_relation VARCHAR(64),
+  allowed_talk_time INTEGER,
+  duration INTEGER NOT NULL DEFAULT 0,
+  call_duration_seconds INTEGER NOT NULL DEFAULT 0,
+  max_allowed_seconds INTEGER,
+  status VARCHAR(32) NOT NULL DEFAULT 'completed',
+  context VARCHAR(64) NOT NULL DEFAULT 'booth_call',
+  recording_url TEXT,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ended_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS call_sid VARCHAR(120);
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS from_number VARCHAR(64);
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS to_number VARCHAR(64);
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS caller_id VARCHAR(64);
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS duration INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS context VARCHAR(64) NOT NULL DEFAULT 'booth_call';
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+CREATE UNIQUE INDEX IF NOT EXISTS idx_call_logs_call_sid ON call_logs(call_sid);
 
 CREATE TABLE IF NOT EXISTS app_settings (
   key VARCHAR(120) PRIMARY KEY,
@@ -88,7 +131,6 @@ CREATE TABLE IF NOT EXISTS app_settings (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Minimal compatibility table for yealinkSipBridge / calls routes
 CREATE TABLE IF NOT EXISTS student_gate_passes (
   id BIGSERIAL PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES students(id) ON DELETE CASCADE,

@@ -6,44 +6,51 @@ const { deleteCloudinaryUrl } = require('../utils/cloudStorage');
 const RETENTION_DAYS = parseInt(process.env.RECORDING_RETENTION_DAYS || '90', 10);
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // Run once every 24 hours
 
-async function cleanupExpiredCallRecordings() {
-  try {
-    const { rows } = await pool.query(
-      `SELECT id, recording_url, created_at
-       FROM call_logs
-       WHERE recording_url IS NOT NULL
-         AND recording_url <> ''
-         AND created_at < NOW() - ($1::int * INTERVAL '1 day')
-       ORDER BY created_at ASC
-       LIMIT 200`,
-      [RETENTION_DAYS]
-    );
+async function cleanupTableRecordings(tableName, recordingsRoot) {
+  const { rows } = await pool.query(
+    `SELECT id, recording_url, created_at
+     FROM ${tableName}
+     WHERE recording_url IS NOT NULL
+       AND recording_url <> ''
+       AND created_at < NOW() - ($1::int * INTERVAL '1 day')
+     ORDER BY created_at ASC
+     LIMIT 200`,
+    [RETENTION_DAYS]
+  );
 
-    let deletedCloud = 0;
-    let deletedLocal = 0;
-    const recordingsRoot = path.resolve(__dirname, '..', '..', 'recordings');
-
-    for (const row of rows) {
-      const url = String(row.recording_url || '');
-      try {
-        if (url.includes('res.cloudinary.com')) {
-          const ok = await deleteCloudinaryUrl(url);
-          if (ok) deletedCloud++;
-        } else {
-          const m = url.match(/\/api\/calls\/recordings\/(\d{4}-\d{2}-\d{2})\/([a-zA-Z0-9_.-]+)$/);
-          if (m) {
-            const localFile = path.resolve(recordingsRoot, m[1], m[2]);
-            if (localFile.startsWith(recordingsRoot) && fs.existsSync(localFile)) {
-              fs.unlinkSync(localFile);
-              deletedLocal++;
-            }
+  let deletedCloud = 0;
+  let deletedLocal = 0;
+  for (const row of rows) {
+    const url = String(row.recording_url || '');
+    try {
+      if (url.includes('res.cloudinary.com')) {
+        const ok = await deleteCloudinaryUrl(url);
+        if (ok) deletedCloud++;
+      } else {
+        const m = url.match(/\/api\/calls\/recordings\/(\d{4}-\d{2}-\d{2})\/([a-zA-Z0-9_.-]+)$/);
+        if (m) {
+          const localFile = path.resolve(recordingsRoot, m[1], m[2]);
+          if (localFile.startsWith(recordingsRoot) && fs.existsSync(localFile)) {
+            fs.unlinkSync(localFile);
+            deletedLocal++;
           }
         }
-        await pool.query(`UPDATE call_logs SET recording_url = NULL WHERE id = $1`, [row.id]);
-      } catch (err) {
-        console.warn(`[Recording Cleanup] Failed for call_log #${row.id}:`, err.message);
       }
+      await pool.query(`UPDATE ${tableName} SET recording_url = NULL WHERE id = $1`, [row.id]);
+    } catch (err) {
+      console.warn(`[Recording Cleanup] Failed for ${tableName} #${row.id}:`, err.message);
     }
+  }
+  return { deletedCloud, deletedLocal };
+}
+
+async function cleanupExpiredCallRecordings() {
+  try {
+    const recordingsRoot = path.resolve(__dirname, '..', '..', 'recordings');
+    const c1 = await cleanupTableRecordings('hostel_call_logs', recordingsRoot).catch(() => ({ deletedCloud: 0, deletedLocal: 0 }));
+    const c2 = await cleanupTableRecordings('call_logs', recordingsRoot).catch(() => ({ deletedCloud: 0, deletedLocal: 0 }));
+    let deletedCloud = c1.deletedCloud + c2.deletedCloud;
+    let deletedLocal = c1.deletedLocal + c2.deletedLocal;
 
     // Also prune local recordings/YYYY-MM-DD folders older than RETENTION_DAYS
     if (fs.existsSync(recordingsRoot)) {
