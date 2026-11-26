@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const pool = require('./src/db');
 
 (async () => {
-  const loginId = process.argv[2] || 'ADMIN001';
+  const loginId = process.argv[2] || 'admin';
   const password = process.argv[3] || 'Admin@123';
   const fullName = process.argv[4] || 'Super Admin';
   const hash = await bcrypt.hash(password, 10);

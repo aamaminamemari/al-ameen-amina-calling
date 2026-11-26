@@ -64,6 +64,7 @@
     <h1 id="schoolTitle">Al Ameen Khadija - Calling System</h1>
     <div id="userBar" class="row hidden">
       <span id="userInfo" style="font-size:13px;font-weight:700;color:#334155;"></span>
+      <button class="gray" onclick="openPwdModal()">Change Password</button>
       <button class="red" onclick="logout()">Logout</button>
     </div>
   </header>
@@ -72,7 +73,7 @@
     <div id="loginBox" class="card" style="max-width:400px;margin:60px auto;">
       <h2 style="margin-top:0;color:#0f2c59;">Admin Login</h2>
       <div style="display:grid;gap:10px;">
-        <input id="loginId" placeholder="Login ID (e.g. ADMIN001)" />
+        <input id="loginId" placeholder="Login ID (e.g. admin)" />
         <input id="loginPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')login()" />
         <button class="primary" onclick="login()">Sign In</button>
         <div id="loginErr" style="color:#dc2626;font-size:13px;font-weight:700;"></div>
@@ -315,6 +316,28 @@
     </div>
   </div>
 
+  <!-- CHANGE PASSWORD MODAL -->
+  <div id="pwdModal" class="modal-bg hidden">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-head">
+        <h3>Change Password</h3>
+        <button class="red" style="padding:4px 10px;" onclick="closeModal('pwdModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;gap:10px;">
+          <div class="field"><label>Current Password</label><input id="pOld" type="password" /></div>
+          <div class="field"><label>New Password (min 6 chars)</label><input id="pNew" type="password" /></div>
+          <div class="field"><label>Confirm New Password</label><input id="pConf" type="password" /></div>
+          <div id="pwdMsg" style="font-size:13px;font-weight:700;"></div>
+        </div>
+        <div class="row" style="justify-content:flex-end;margin-top:16px;">
+          <button class="gray" onclick="closeModal('pwdModal')">Cancel</button>
+          <button class="primary" onclick="changePassword()">Update Password</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
 const tokenKey = 'school_calling_token';
 let allSchedules = [];
@@ -344,6 +367,34 @@ async function login() {
   } catch (e) { loginErr.textContent = e.message; }
 }
 function logout() { localStorage.removeItem(tokenKey); location.reload(); }
+function openPwdModal() {
+  pOld.value = pNew.value = pConf.value = '';
+  pwdMsg.textContent = '';
+  pwdModal.classList.remove('hidden');
+}
+async function changePassword() {
+  try {
+    pwdMsg.style.color = '#dc2626';
+    pwdMsg.textContent = '';
+    if (!pOld.value || pNew.value.length < 6) {
+      pwdMsg.textContent = 'New password must be at least 6 characters.';
+      return;
+    }
+    if (pNew.value !== pConf.value) {
+      pwdMsg.textContent = 'New passwords do not match.';
+      return;
+    }
+    await api('/api/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ current_password: pOld.value, new_password: pNew.value })
+    });
+    pwdMsg.style.color = '#16a34a';
+    pwdMsg.textContent = 'Password updated successfully!';
+    setTimeout(() => closeModal('pwdModal'), 1000);
+  } catch (e) {
+    pwdMsg.textContent = e.message;
+  }
+}
 
 function showTab(name, btn) {
   ['schedules','logs','students'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
